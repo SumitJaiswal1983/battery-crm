@@ -2,9 +2,7 @@
   "name": "battery-crm",
   "version": "1.0.0",
   "scripts": {
-    "start": "node backend/src/index.js",
-    "build": "echo 'build done'",
-    "postinstall": "npm install --prefix backend"
+    "start": "node backend/src/index.js"
   },
   "engines": { "node": ">=18.0.0" }
 }
