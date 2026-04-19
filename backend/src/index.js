@@ -2,6 +2,38 @@ require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+
+async function runMigrations() {
+  const db = require('./config/db');
+  try {
+    const sql = fs.readFileSync(path.join(__dirname, 'config/schema.sql'), 'utf8');
+    await db.query(sql);
+    console.log('✅ Database schema ready');
+  } catch (err) {
+    console.error('⚠️  Migration warning:', err.message);
+    return;
+  }
+  try {
+    const { rows } = await db.query('SELECT COUNT(*) FROM users');
+    if (parseInt(rows[0].count) === 0) {
+      console.log('🌱 Empty database detected, running seed...');
+      const bcrypt = require('bcryptjs');
+      const hash = await bcrypt.hash('Admin@123', 10);
+      await db.query(`
+        INSERT INTO users (name, username, password, role, mobile, emp_code, is_active) VALUES
+          ('Super Admin', 'admin', $1, 'admin', '9999999999', 'EMP001', true),
+          ('Claim Dispatch', 'dispatch', $1, 'claim_dispatch', '9999999998', 'EMP002', true),
+          ('Claim Return', 'returns', $1, 'claim_return', '9999999997', 'EMP003', true),
+          ('Store Manager', 'store', $1, 'store', '9999999996', 'EMP004', true)
+        ON CONFLICT (username) DO NOTHING
+      `, [hash]);
+      console.log('✅ Default users created (admin / Admin@123)');
+    }
+  } catch (err) {
+    console.error('⚠️  Seed warning:', err.message);
+  }
+}
 
 const app = express();
 
@@ -59,6 +91,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+runMigrations().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 });
