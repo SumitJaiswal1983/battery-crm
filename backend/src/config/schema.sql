@@ -321,6 +321,36 @@ CREATE TABLE IF NOT EXISTS gallery (
   created_at  TIMESTAMP DEFAULT NOW()
 );
 
+-- MOBILE OTP (for Highflow Connect app)
+CREATE TABLE IF NOT EXISTS mobile_otps (
+  id         SERIAL PRIMARY KEY,
+  mobile     VARCHAR(15) NOT NULL,
+  otp        VARCHAR(6) NOT NULL,
+  role       VARCHAR(20) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  used       BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- WARRANTY REGISTRATIONS (from mobile app)
+CREATE TABLE IF NOT EXISTS warranty_registrations (
+  id               SERIAL PRIMARY KEY,
+  serial_no        VARCHAR(100) NOT NULL,
+  product_id       INT REFERENCES products(id),
+  dealer_id        INT REFERENCES dealers(id),
+  distributor_id   INT REFERENCES distributors(id),
+  customer_id      INT REFERENCES customers(id),
+  date_of_sale     DATE,
+  warranty_code    VARCHAR(30) UNIQUE NOT NULL,
+  warranty_start   DATE,
+  warranty_end     DATE,
+  status           VARCHAR(20) DEFAULT 'active',
+  warranty_card_url  VARCHAR(500),
+  invoice_url        VARCHAR(500),
+  insurance_url      VARCHAR(500),
+  created_at       TIMESTAMP DEFAULT NOW()
+);
+
 -- INDEXES for performance
 CREATE INDEX IF NOT EXISTS idx_complaints_status      ON complaints(status);
 CREATE INDEX IF NOT EXISTS idx_complaints_distributor ON complaints(distributor_id);
@@ -330,3 +360,5 @@ CREATE INDEX IF NOT EXISTS idx_dealers_distributor    ON dealers(distributor_id)
 CREATE INDEX IF NOT EXISTS idx_serial_numbers_serial  ON serial_numbers(serial_no);
 CREATE INDEX IF NOT EXISTS idx_claim_dispatch_status  ON claim_dispatch(status);
 CREATE INDEX IF NOT EXISTS idx_claim_return_status    ON claim_return(status);
+CREATE INDEX IF NOT EXISTS idx_mobile_otps_mobile     ON mobile_otps(mobile);
+CREATE INDEX IF NOT EXISTS idx_warranty_reg_serial    ON warranty_registrations(serial_no);
