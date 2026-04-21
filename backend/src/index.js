@@ -64,6 +64,7 @@ app.use('/api/banners',      require('./routes/banners'));
 app.use('/api/gallery',      require('./routes/gallery'));
 app.use('/api/users',        require('./routes/users'));
 app.use('/api/dashboard',    require('./routes/dashboard'));
+app.use('/api/mobile',       require('./routes/mobile'));
 
 // Health check
 app.get('/api/health', (req, res) => {
